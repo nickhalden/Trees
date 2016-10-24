@@ -1,3 +1,5 @@
+import javax.print.attribute.IntegerSyntax;
+import java.awt.*;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -27,81 +29,19 @@ public class BinaryTree<E extends  Comparable<? super E>> {
         return this.root;
     }
 
-
-
-    BinaryTree(){
-            TreeNode<Integer> root= new TreeNode<>(1,null);
-//        TreeNode<Integer> node20=new TreeNode<Integer>(20,null);
-//        TreeNode<Integer> node10=new TreeNode<Integer>(10,null);
-//        TreeNode<Integer> node30=new TreeNode<Integer>(30,null);
-//        TreeNode<Integer> node60=new TreeNode<Integer>(60,null);
-//        TreeNode<Integer> node50=new TreeNode<Integer>(50,null);
-//        TreeNode<Integer> node70=new TreeNode<Integer>(70,null);
-
-        root.addRightChild(2);
-
-           root.addLeftChild(10);
-
-
-    }
-
-    public static void main(String[] args) {
-
-        BinaryTree b= new BinaryTree();
-
-
-
-        System.out.println(b.getroot().getLeftChild());
-
-    }
-    public boolean contains(E toFind){
-        TreeNode<E> curr=root;
-        int comp;
-        while (curr!=null){
-            comp=toFind.compareTo(curr.getValue());
-            if (comp>0) {
-                curr= curr.getRightChild();
-            }else if (comp<0){
-                curr= curr.getLeftChild();
-            }else
-                return true;
-        }
-        return false;
-    }
-
-
-
-
-
-
-
-    // Preorder Traversal
+    // postOrder and preOrder are DFS
+    // Pre order Traversal
     // Visit Yourself
     // Recursively
     // Then Visit all your left subtree
     // Then Visit all your subtree
-    private void preOrder(TreeNode<E> node){
-        if (node!=null){
-            //node.visit();
-            preOrder(node.getLeftChild());
-            preOrder(node.getRightChild());
-        }
-    }
-    public void preOrder(){
-        this.preOrder(root);
-    }
-    //POSTORDER TRAVERSAl
-    // Visit all your left subtree
-    // Visit all your right subtree
-    // Visit youtself
-
-    // postOrder and preOrder are DFS
-
 
     // Level order is also BFS
-    public void levelOrder(){
+
+    private void levelOrder(TreeNode node){
         Queue <TreeNode<E>> queue=new LinkedList<>();
         queue.add(root);
+        // while the queue has elements remove from the queue
         while(!queue.isEmpty()){
             TreeNode<E> curr= queue.remove();
             if (curr!=null){
@@ -119,47 +59,170 @@ public class BinaryTree<E extends  Comparable<? super E>> {
     }
 
 
+    //POST ORDER TRAVERSAl
+    // Visit all your left subtree
+    // Visit all your right subtree
+    // Visit yourself
 
-}
-class TreeNode<E>{
-    private E value;
-    private TreeNode<E> parent;
-    private TreeNode<E> left;
-    private TreeNode<E> right;
-    private boolean visit=false;
-    public TreeNode(E val,TreeNode<E> par){
-        this.value=val;
-        this.parent=par;
-        this.left=null;
-        this.right=null;
-    }
+    private void postOrder(TreeNode<E> node){
+        if (node!=null){
+            postOrder(node.getLeftChild());
+            System.out.println(node.getValue());
+            postOrder(node.getRightChild());
+        }
 
-    public E getValue() {
-        return value;
     }
 
+    public void search(E val){
+        TreeNode<E> position=root;
+        int comp;
+        while (position!=null){
+            comp=val.compareTo(position.getValue());
+            if (comp<0){
+                System.out.println(comp+" "+val+" "+position.getValue());
+                position=position.getLeftChild();
+            }else if (comp>0){
+                System.out.println(val+" "+position.getValue());
+                position=position.getRightChild();
+            }else {
+                System.out.println("Found the element: "+ position.getValue());
+                return;
+            }
 
-    public TreeNode<E> getLeftChild() {
-        return this.left;
-    }
-    public TreeNode<E> getRightChild(){
-        return this.right;
+        }
     }
 
-    public TreeNode<E> addLeftChild(E val){
-        // this itself is the parent of iteself
-        this.left=new TreeNode<E>(val,this);
-        return this.left;
+    // my implementation of maintain a pointer to the current pointer iteself
+    // and wherever it falls of create a new node ad the pointer to pointer will
+    // help know where to go
+    public void insertNode(E val){
+        TreeNode<E> curr;
+        TreeNode<E> pointerToCurrent=null;
+        if (root==null){
+            root= new TreeNode(val,null);
+            return;
+        }else {
+            curr= root;
+            while (curr!=null){
+                int comp=val.compareTo(curr.getValue());
+                if (comp<0){
+                    pointerToCurrent=curr;
+                    curr=curr.getLeftChild();
+                }else if (comp>0){
+                    pointerToCurrent=curr;
+                    curr=curr.getRightChild();
+                }
+
+            }
+            if (val.compareTo(pointerToCurrent.getValue())<0){
+                pointerToCurrent.addLeftChild(val);
+            }else {
+                pointerToCurrent.addRightChild(val);
+            }
+
+        }
+
+
     }
 
-    public TreeNode<E> addRightChild(E val){
-        // this itself is the parent of iteself
-        this.right=new TreeNode<E>(val,this);
-        return this.right;
+
+    // go in the tree until the point where you know you won't fall off
+    // after that compare the values and see where to insert
+    public boolean  insertNode2(E val){
+
+
+        if (root==null){
+            root=new TreeNode<>(val,null);
+            return true;
+        }
+        TreeNode<E> curr=root;
+
+        if (val.compareTo(curr.getValue())==0){
+            System.out.println("Node already existing as the root "
+                    +curr.getValue());
+            return false;
+        }
+
+        int comp=val.compareTo(curr.getValue());
+        while (comp<0 && curr.getLeftChild()!=null
+                || comp>0 && comp>0 &&curr.getRightChild()!=null){
+            if (comp>0) curr=curr.getRightChild();
+            else curr=curr.getLeftChild();
+
+        }
+        if (comp>0){
+            curr.addRightChild(val);
+        }else if (comp>0) {
+            curr.addLeftChild(val);
+        }else {
+            return false;
+        }
+        return true;
     }
-    public void visit(){
-        this.visit=true;
+
+
+    private void preOrder(TreeNode<E> node){
+        if (node!=null){
+            node.visit();// mark the visited node to be true
+            System.out.println(node.getValue());
+            preOrder(node.getLeftChild());
+            preOrder(node.getRightChild());
+        }
     }
+
+
+
+
+
+    public boolean contains(E toFind){
+        TreeNode<E> curr=root;
+        int comp;
+        while (curr!=null){
+            comp=toFind.compareTo(curr.getValue());
+            if (comp>0) {
+                curr= curr.getLeftChild();
+            }else if (comp<0){
+                curr= curr.getRightChild();
+            }else{
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
+
+
+    public void preOrder(){
+        this.preOrder(root);
+    }
+
+    public void postOrder(){
+        this.postOrder(root);
+    }
+
+    public void levelOrder(){ this.levelOrder(root);}
+
+
+
+
+
+    public static void main(String[] args) {
+
+        BinaryTree b= new BinaryTree();
+        b.insertNode2(11);
+        b.insertNode2(10);
+        b.insertNode2(3);
+        b.insertNode2(5);
+        b.insertNode2(11);
+
+
+        b.search(5);
+
+
+
+    }
+
 
 
 }
